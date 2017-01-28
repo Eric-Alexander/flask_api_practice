@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-from models import db, User
-from forms import Signup, Login
+from models import db, User, LocationPoint
+from forms import Signup, Login, Location
 
 app = Flask(__name__)
 #note that 'user' and 'password' aren't required...look into this
@@ -25,6 +25,8 @@ def about():
 
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
+    if 'email' in session:
+        return redirect(url_for('home'))
     form = Signup()
 
     if request.method == 'POST':
@@ -42,6 +44,8 @@ def signup():
         return render_template("signup.html", form=form)
 @app.route("/login", methods=['GET','POST'])
 def login():
+        if 'email' in session:
+            return redirect(url_for('home'))
         form = Login()
 
         if request.method == 'POST':
@@ -65,9 +69,30 @@ def login():
 def logout():
     session.pop('email', None)
     return redirect(url_for('index'))
-@app.route("/home")
+
+@app.route("/home", methods=['GET','POST'])
 def home():
+    if 'email' not in session:
+        return redirect(url_for('login'))
+
+    form = Location()
+    mall = []
+    coord = (47.6062, -122.3321)
+    if request.method == "POST":
+        if form.validate() == False:
+            return render_template('home.html', form=form)
+        else:
+            loc = form.location.data
+            place = LocationPoint()
+            coord = place.loc_lat_long(loc)
+            mall = place.query(loc)
+            return render_template('home.html', form=form, coord=coord, mall=mall)
+
+    elif request.method == "GET":
+        return render_template("home.html", form=form, coord=coord, mall=mall)
+
     return render_template("home.html")
+
 
 if __name__=="__main__":
     app.run(debug=True)

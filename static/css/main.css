@@ -3,6 +3,9 @@ html, body, h1 {
   padding: 0;
 }
 
+#map { height: 180px; }
+
+
 body {
   background-color: #f4f4f4;
   font-family: 'Open Sans', sans-serif;
